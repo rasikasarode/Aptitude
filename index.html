@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aptitude Quiz Website</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background-color: #f8f9fa; }
+    .container { margin-top: 20px; }
+    .quiz-section, .notes-section { display: none; }
+  </style>
+</head>
+
+<body>
+  <!-- Signup Section -->
+  <div class="container" id="signupSection" style="margin-top: 50px; display: none;">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <div class="mb-3">
+        <label for="signupUsername" class="form-label">Username</label>
+        <input type="text" class="form-control" id="signupUsername" required>
+      </div>
+      <div class="mb-3">
+        <label for="signupPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="signupPassword" required>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="signup()">Sign Up</button>
+      <button type="button" class="btn btn-link" onclick="showLogin()">Already have an account? Login</button>
+      <p id="signupMessage" class="text-danger"></p>
+    </form>
+  </div>
+
+  <!-- Login Section -->
+  <div class="container" id="loginSection" style="margin-top: 50px;">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <div class="mb-3">
+        <label for="loginUsername" class="form-label">Username</label>
+        <input type="text" class="form-control" id="loginUsername" required>
+      </div>
+      <div class="mb-3">
+        <label for="loginPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="loginPassword" required>
+      </div>
+      <button type="button" class="btn btn-success" onclick="login()">Login</button>
+      <button type="button" class="btn btn-link" onclick="showSignup()">Don't have an account? Sign Up</button>
+      <p id="loginError" class="text-danger"></p>
+    </form>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="display: none;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Aptitude Quiz</a>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home')">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('quiz')">Quiz</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('notes')">Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div id="home" class="home-section">
+      <h2>Welcome to the Aptitude Quiz Website</h2>
+      <p>Practice MCQs and review topic-wise notes to enhance your aptitude skills.</p>
+    </div>
+
+    <div id="quiz" class="quiz-section">
+      <h2>Quiz Section</h2>
+      <form id="quizForm">
+        <p>1. What is 5 + 3?</p>
+        <input type="radio" name="q1" value="6"> 6
+        <input type="radio" name="q1" value="8"> 8
+        <input type="radio" name="q1" value="9"> 9
+
+        <p>2. What is the capital of France?</p>
+        <input type="radio" name="q2" value="Berlin"> Berlin
+        <input type="radio" name="q2" value="Madrid"> Madrid
+        <input type="radio" name="q2" value="Paris"> Paris
+
+        <br><br>
+        <button type="button" class="btn btn-primary" onclick="checkAnswers()">Submit</button>
+        <p id="result"></p>
+      </form>
+
+      <div id="addQuestionSection" style="margin-top:20px;">
+        <h3>Add a New Question</h3>
+        <input type="text" id="newQuestion" class="form-control mb-2" placeholder="Enter question">
+        <input type="text" id="option1" class="form-control mb-2" placeholder="Option 1">
+        <input type="text" id="option2" class="form-control mb-2" placeholder="Option 2">
+        <input type="text" id="option3" class="form-control mb-2" placeholder="Option 3">
+        <input type="text" id="correctAnswer" class="form-control mb-2" placeholder="Correct Answer">
+        <button type="button" class="btn btn-success" onclick="addQuestion()">Add Question</button>
+      </div>
+    </div>
+
+    <div id="notes" class="notes-section">
+      <h2>Topic-wise Notes</h2>
+      <div id="notesContent">
+        <p><strong>Basic Arithmetic:</strong> Arithmetic is the foundation of mathematics, dealing with numbers and basic operations like addition, subtraction, multiplication, and division.</p>
+        <p><strong>Logical Reasoning:</strong> Logical reasoning questions test your ability to analyze patterns, sequences, and logical statements.</p>
+      </div>
+
+      <div id="addNoteSection" style="margin-top:20px;">
+        <h3>Add a New Note</h3>
+        <input type="text" id="newNoteTitle" class="form-control mb-2" placeholder="Note Title">
+        <textarea id="newNoteContent" class="form-control mb-2" placeholder="Note Content"></textarea>
+        <button type="button" class="btn btn-success" onclick="addNote()">Add Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    let users = [{ username: "admin", password: "admin123" }];
+
+    function showSignup() {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('signupSection').style.display = 'block';
+    }
+
+    function showLogin() {
+      document.getElementById('signupSection').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+    }
+
+    function signup() {
+      const username = document.getElementById('signupUsername').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+      if (!username || !password) {
+        document.getElementById('signupMessage').innerText = "Please fill all fields.";
+        return;
+      }
+      const existingUser = users.find(user => user.username === username);
+      if (existingUser) {
+        document.getElementById('signupMessage').innerText = "Username already exists. Try another.";
+        return;
+      }
+      users.push({ username, password });
+      document.getElementById('signupMessage').innerText = "Signup successful! Please login.";
+      document.getElementById('signupForm').reset();
+      setTimeout(() => { showLogin(); }, 1500);
+    }
+
+    function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const validUser = users.find(user => user.username === username && user.password === password);
+      if (validUser) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.querySelector('.navbar').style.display = 'flex';
+        showSection('home');
+      } else {
+        document.getElementById('loginError').innerText = "Invalid username or password.";
+      }
+    }
+
+    function showSection(section) {
+      document.querySelector('.home-section').style.display = 'none';
+      document.querySelector('.quiz-section').style.display = 'none';
+      document.querySelector('.notes-section').style.display = 'none';
+      document.getElementById(section).style.display = 'block';
+    }
+
+    function logout() {
+      document.querySelector('.navbar').style.display = 'none';
+      document.querySelector('.home-section').style.display = 'none';
+      document.querySelector('.quiz-section').style.display = 'none';
+      document.querySelector('.notes-section').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+      document.getElementById('loginForm').reset();
+      document.getElementById('loginError').innerText = '';
+    }
+
+    function checkAnswers() {
+      let score = 0;
+      if (document.querySelector('input[name="q1"]:checked')?.value === "8") { score++; }
+      if (document.querySelector('input[name="q2"]:checked')?.value === "Paris") { score++; }
+      document.getElementById('result').innerText = You scored: ${score}/2;
+    }
+
+    function addQuestion() {
+      const question = document.getElementById('newQuestion').value.trim();
+      const opt1 = document.getElementById('option1').value.trim();
+      const opt2 = document.getElementById('option2').value.trim();
+      const opt3 = document.getElementById('option3').value.trim();
+      const correct = document.getElementById('correctAnswer').value.trim();
+      if (!question || !opt1 || !opt2 || !opt3 || !correct) {
+        alert('Please fill all fields.');
+        return;
+      }
+      const form = document.getElementById('quizForm');
+      const p = document.createElement('p');
+      p.innerText = question;
+      form.appendChild(p);
+      [opt1, opt2, opt3].forEach(opt => {
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'q' + (form.querySelectorAll('p').length);
+        input.value = opt;
+        form.appendChild(input);
+        form.append(opt + " ");
+      });
+      form.appendChild(document.createElement('br'));
+      form.appendChild(document.createElement('br'));
+      document.getElementById('newQuestion').value = '';
+      document.getElementById('option1').value = '';
+      document.getElementById('option2').value = '';
+      document.getElementById('option3').value = '';
+      document.getElementById('correctAnswer').value = '';
+      alert('Question added!');
+    }
+
+    function addNote() {
+      const title = document.getElementById('newNoteTitle').value.trim();
+      const content = document.getElementById('newNoteContent').value.trim();
+      if (!title || !content) {
+        alert('Please fill all fields.');
+        return;
+      }
+      const notesDiv = document.getElementById('notesContent');
+      const p = document.createElement('p');
+      p.innerHTML = <strong>${title}:</strong> ${content};
+      notesDiv.appendChild(p);
+      document.getElementById('newNoteTitle').value = '';
+      document.getElementById('newNoteContent').value = '';
+      alert('Note added!');
+    }
+  </script>
+</body>
+</html>
